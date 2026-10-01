@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>USTOZ AI - Vocabulary Quiz</title>
+
+<style>
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #071b3d;
+    color: white;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 18px;
+}
+
+.card {
+    width: 100%;
+    max-width: 520px;
+    background: #0d2b59;
+    border: 1px solid #1f5fa8;
+    border-radius: 26px;
+    padding: 24px;
+    box-shadow: 0 15px 45px rgba(0,0,0,0.5);
+}
+
+.logo {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    background: #1685f5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 35px;
+    margin: auto;
+}
+
+h1 {
+    text-align: center;
+    margin: 10px 0 4px;
+}
+
+.sub {
+    text-align: center;
+    color: #9fc9ff;
+    margin-bottom: 22px;
+}
+
+.top {
+    display: flex;
+    justify-content: space-between;
+    color: #a9d0ff;
+    margin-bottom: 10px;
+}
+
+.bar {
+    height: 9px;
+    background: #163d72;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.fill {
+    height: 100%;
+    background: #19a7ff;
+    width: 0%;
+    transition: 0.25s;
+}
+
+.question {
+    font-size: 24px;
+    text-align: center;
+    margin: 28px 0 22px;
+    font-weight: bold;
+}
+
+.answers {
+    display: grid;
+    gap: 12px;
+}
+
+.ans {
+    border: none;
+    border-radius: 15px;
+    background: #123c75;
+    color: white;
+    padding: 16px;
+    font-size: 17px;
+    text-align: left;
+    cursor: pointer;
+}
+
+.ans:hover {
+    background: #1a559c;
+}
+
+.correct {
+    background: #12b879 !important;
+}
+
+.wrong {
+    background: #e84b68 !important;
+}
+
+.feedback {
+    text-align: center;
+    min-height: 27px;
+    margin: 16px 0;
+    font-weight: bold;
+}
+
+.next,
+.start {
+    width: 100%;
+    border: none;
+    border-radius: 15px;
+    background: #168cff;
+    color: white;
+    padding: 16px;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.next {
+    display: none;
+}
+
+.result {
+    text-align: center;
+    display: none;
+}
+
+.score {
+    font-size: 48px;
+    font-weight: 800;
+    color: #35b8ff;
+}
+
+.small {
+    color: #a9c9ed;
+}
+</style>
+</head>
+
+<body>
+
+<div class="card">
+
+<div id="game">
+
+<div class="logo">🤖</div>
+
+<h1>USTOZ AI</h1>
+
+<div class="sub">
+Vocabulary Quiz
+</div>
+
+<div class="top">
+<span id="count">Question 1/10</span>
+<span id="points">0 points</span>
+</div>
+
+<div class="bar">
+<div class="fill" id="fill"></div>
+</div>
+
+<div class="question" id="question"></div>
+
+<div class="answers" id="answers"></div>
+
+<div class="feedback" id="feedback"></div>
+
+<button class="next" id="next">
+Next question →
+</button>
+
+</div>
+
+
+<div class="result" id="result">
+
+<div class="logo">🏆</div>
+
+<h1>Great job!</h1>
+
+<div class="score" id="score"></div>
+
+<p class="small" id="message"></p>
+
+<button class="start" onclick="location.reload()">
+Play Again
+</button>
+
+</div>
+
+</div>
+
+
+<script>
+
+const questions = [
+
+["brave",
+["jasur","qo'rqoq","sekin","baxtli"],0],
+
+["ancient",
+["zamonaviy","qadimiy","qimmat","kichik"],1],
+
+["improve",
+["yaxshilamoq","unutmoq","sotmoq","kutmoq"],0],
+
+["journey",
+["sayohat","dars","ovqat","do'st"],0],
+
+["honest",
+["halol","g'azablangan","charchagan","baland"],0],
+
+["achieve",
+["erishmoq","yo'qotmoq","yashirmoq","boshlamoq"],0],
+
+["confident",
+["o'ziga ishongan","qo'rqqan","och","xafa"],0],
+
+["environment",
+["atrof-muhit","imkoniyat","javob","qoidalar"],0],
+
+["require",
+["talab qilmoq","taklif qilmoq","tushunmoq","tanlamoq"],0],
+
+["success",
+["muvaffaqiyat","xato","savol","tezlik"],0]
+
+];
+
+
+let current = 0;
+
+let score = 0;
+
+let locked = false;
+
+
+const question =
+document.getElementById("question");
+
+const answers =
+document.getElementById("answers");
+
+const feedback =
+document.getElementById("feedback");
+
+const next =
+document.getElementById("next");
+
+
+function loadQuestion() {
+
+locked = false;
+
+next.style.display = "none";
+
+feedback.textContent = "";
+
+document.getElementById("count").textContent =
+`Question ${current + 1}/${questions.length}`;
+
+document.getElementById("points").textContent =
+`${score} points`;
+
+document.getElementById("fill").style.width =
+`${current / questions.length * 100}%`;
+
+
+question.textContent =
+`What does "${questions[current][0]}" mean?`;
+
+
+answers.innerHTML = "";
+
+
+questions[current][1].forEach((answer, index) => {
+
+const button = document.createElement("button");
+
+button.className = "ans";
+
+button.textContent =
+`${String.fromCharCode(65 + index)}  ${answer}`;
+
+button.onclick = () =>
+checkAnswer(button, index);
+
+answers.appendChild(button);
+
+});
+
+}
+
+
+function checkAnswer(button, index) {
+
+if (locked) return;
+
+locked = true;
+
+
+const correct =
+index === questions[current][2];
+
+
+if (correct) {
+
+score += 10;
+
+button.classList.add("correct");
+
+feedback.textContent =
+"✅ Correct! +10 points";
+
+} else {
+
+button.classList.add("wrong");
+
+answers.children[
+questions[current][2]
+].classList.add("correct");
+
+feedback.textContent =
+"❌ Not quite — correct answer is highlighted.";
+
+}
+
+
+document.getElementById("points").textContent =
+`${score} points`;
+
+next.style.display = "block";
+
+}
+
+
+next.onclick = function() {
+
+current++;
+
+if (current < questions.length) {
+
+loadQuestion();
+
+} else {
+
+finishGame();
+
+}
+
+};
+
+
+function finishGame() {
+
+document.getElementById("game").style.display =
+"none";
+
+document.getElementById("result").style.display =
+"block";
+
+document.getElementById("score").textContent =
+`${score}/100`;
+
+
+if (score >= 80) {
+
+document.getElementById("message").textContent =
+"Excellent! Keep going! 🚀";
+
+} else if (score >= 60) {
+
+document.getElementById("message").textContent =
+"Good work! Keep practicing! 💪";
+
+} else {
+
+document.getElementById("message").textContent =
+"Nice start! Practice makes progress! 📚";
+
+}
+
+}
+
+
+loadQuestion();
+
+</script>
+
+</body>
+  </html>
